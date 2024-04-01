@@ -70,6 +70,12 @@ Route::middleware('auth:admin')->group(function () {
     Route::post('admin/logout', [Admin\Auth\AuthenticatedSessionController::class, 'destroy'])
                 ->name('admin.logout');
 });
+Route::middleware('auth:admin')->group(function () {
+    Route::get('admin/index', [Admin\UserController::class, 'index'])
+            ->name('admin.users.index');
+});
 
-Route::get('admin/index', [Admin\UserController::class, 'index'])->name('admin.users.index');
-Route::get('admin/show={user}', [Admin\UserController::class, 'show'])->name('admin.users.show');
+Route::middleware('auth:admin')->group(function () {
+Route::get('admin/show={user}', [Admin\UserController::class, 'show'])
+            ->name('admin.users.show');
+});
