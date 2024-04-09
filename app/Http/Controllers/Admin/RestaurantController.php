@@ -28,11 +28,6 @@ class RestaurantController extends Controller
         return view('admin.restaurants.index', compact('restaurants', 'total', 'keyword'));
     }
 
-    public function show(Restaurant $restaurant)
-    {
-        return view('admin.restaurants.show', compact('restaurant'));
-    }
-
     public function create(Restaurant $restaurant)
     {
         return view('admin.restaurants.create');
@@ -73,7 +68,12 @@ class RestaurantController extends Controller
 
         $restaurant->save();
 
-        return view('admin.restaurants.index', compact('restaurant'))->with('flash_message', '店舗を登録しました。');
+        return redirect()->route('admin.restaurants.index', compact('restaurant'))->with('flash_message', '店舗を登録しました。');
+    }
+
+    public function show(Restaurant $restaurant)
+    {
+        return view('admin.restaurants.show', compact('restaurant'));
     }
 
     public function edit(Restaurant $restaurant)
@@ -81,7 +81,7 @@ class RestaurantController extends Controller
         return view('admin.restaurants.edit', compact('restaurant'));
     }
 
-    public function update(Restaurant $restaurant)
+    public function update(Request $request, Restaurant $restaurant)
     {
         $request->validate([
             'name' => 'required',
@@ -108,10 +108,12 @@ class RestaurantController extends Controller
 
         if($request->hasFile('image')) {
             $image = $request->file('image')->store('public/restaurants');
-            $restaurant->image = basename($image_path);
+            $restaurant->image = basename($image);
         }
 
-        return view('admin.restaurants.index', compact('restaurant'))->with('flash_message', '店舗を編集しました。');
+        $restaurant->update();
+
+        return redirect()->route('admin.restaurants.show', compact('restaurant'))->with('flash_message', '店舗を編集しました。');
 
     }
 
@@ -119,6 +121,6 @@ class RestaurantController extends Controller
     {
         $restaurant->delete();
 
-        return view('admin.restaurants.index', compact('restaurant'))->with('flash_message', '店舗を削除しました。');
+        return redirect()->route('admin.restaurants.index', compact('restaurant'))->with('flash_message', '店舗を削除しました。');
     }
 }

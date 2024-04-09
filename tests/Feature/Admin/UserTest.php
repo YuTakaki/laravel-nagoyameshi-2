@@ -80,6 +80,6 @@ class UserTest extends TestCase
         $response = $this->get(route('admin.users.show', ['user' => $user->id]));
     
         // リダイレクトされることを確認
-         $response->assertStatus(200);
+        $response->assertStatus(200);
     }
 }
