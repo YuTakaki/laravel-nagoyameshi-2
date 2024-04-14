@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Admin\RestaurantController;
+use App\Http\Controllers\Admin\CategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +41,9 @@ Route::controller(RestaurantController::class)->group(function () {
     Route::delete('/admin/restaurants/{restaurant}', 'destroy')->name('admin.restaurants.destroy');
     Route::patch('/admin/restaurants/show/{restaurant}', 'update')->name('admin.restaurants.update');
 });
+
+Route::resource('admin/categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy'])->names('admin.categories');
+
 
 
 

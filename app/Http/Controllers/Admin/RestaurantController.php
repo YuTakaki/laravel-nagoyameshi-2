@@ -124,3 +124,4 @@ class RestaurantController extends Controller
         return redirect()->route('admin.restaurants.index', compact('restaurant'))->with('flash_message', '店舗を削除しました。');
     }
 }
+
