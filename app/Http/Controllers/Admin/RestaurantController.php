@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Restaurant;
+use App\Models\Category;
+use Illuminate\Support\Facades\Auth;
 
 class RestaurantController extends Controller
 {
@@ -30,7 +32,9 @@ class RestaurantController extends Controller
 
     public function create(Restaurant $restaurant)
     {
-        return view('admin.restaurants.create');
+        $categories = Category::all();
+
+        return view('admin.restaurants.create', ['categories' => $categories]);
     }
 
     public function store(Request $request)
@@ -50,6 +54,12 @@ class RestaurantController extends Controller
 
         $restaurant = new Restaurant();
         $restaurant->name = $request->input('name');
+        if($request->hasFile('image')) {
+            $image = $request->file('image')->store('public/restaurants');
+            $restaurant->image_name = basename($image);
+        } else {
+            $restaurant->image = '';
+        }
         $restaurant->description = $request->input('description');
         $restaurant->lowest_price = $request->input('lowest_price');
         $restaurant->highest_price = $request->input('highest_price');
@@ -58,15 +68,10 @@ class RestaurantController extends Controller
         $restaurant->opening_time = $request->input('opening_time');
         $restaurant->closing_time = $request->input('closing_time');
         $restaurant->seating_capacity = $request->input('seating_capacity');
-
-        if($request->hasFile('image')) {
-            $image = $request->file('image')->store('public/restaurants');
-            $restaurant->image_name = basename($image);
-        } else {
-            $restaurant->image = '';
-        }
-
         $restaurant->save();
+
+        $category_ids = array_filter($request->input('category_ids'));
+        $restaurant->categories()->sync($category_ids);
 
         return redirect()->route('admin.restaurants.index', compact('restaurant'))->with('flash_message', '店舗を登録しました。');
     }
@@ -78,7 +83,10 @@ class RestaurantController extends Controller
 
     public function edit(Restaurant $restaurant)
     {
-        return view('admin.restaurants.edit', compact('restaurant'));
+        $categories = Category::all();
+        $category_ids = $restaurant->categories->pluck('id')->toArray();
+
+        return view('admin.restaurants.edit', compact('restaurant', 'category_ids', 'categories'));
     }
 
     public function update(Request $request, Restaurant $restaurant)
@@ -112,6 +120,9 @@ class RestaurantController extends Controller
         }
 
         $restaurant->update();
+
+        $category_ids = array_filter($request->input('category_ids'));
+        $restaurant->categories()->sync($category_ids);
 
         return redirect()->route('admin.restaurants.show', compact('restaurant'))->with('flash_message', '店舗を編集しました。');
 

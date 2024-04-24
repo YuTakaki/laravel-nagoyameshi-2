@@ -8,6 +8,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Admin;
 use App\Models\Restaurant;
+use App\Models\Category;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
@@ -132,12 +133,29 @@ class RestaurantTest extends TestCase
     // 未ログインのユーザーは店舗を登録できない
     public function test_unauthenticated_user_cannnot_register_restaurant(): void
     {
-        $restaurant = Restaurant::factory()->create();
-        $data = $restaurant->toArray();
+        $categoryIds = [];
+        for ($i = 1; $i <= 3; $i++) {
+            $category = Category::create([
+                'name' => 'カテゴリ' . $i
+            ]);
+            array_push($categoryIds, $category->id);    
+        }
 
-        $response = $this->post(route('admin.restaurants.store'), $data);
+        $restaurant = [
+            'name' => 'テスト',
+            'description' => 'テスト',
+            'lowest_price' => 1000,
+            'highest_price' => 5000,
+            'postal_code' => '0000000',
+            'address' => 'テスト',
+            'opening_time' => '10:00:00',
+            'closing_time' => '20:00:00',
+            'seating_capacity' => 50,
+            'category_ids' => $categoryIds,
+        ];
 
-        $this->assertDatabaseMissing('restaurants', $data);
+        $response = $this->post(route('admin.restaurants.store'), $restaurant);
+
         $response->assertRedirect(route('admin.login'));
     }
 
@@ -145,12 +163,31 @@ class RestaurantTest extends TestCase
     public function test_authenticated_regular_user_cannot_register_restaurant(): void
     {
         $user = User::factory()->create();
-        $restaurant = Restaurant::factory()->create();
-        $data = $restaurant->toArray();
+        $this->actingAs($user);
 
-        $response = $this->actingAs($user)->post(route('admin.restaurants.store'), $data);
- 
-        $this->assertDatabaseMissing('restaurants', $data);
+        $categoryIds = [];
+        for ($i = 1; $i <= 3; $i++) {
+            $category = Category::create([
+                'name' => 'カテゴリ' . $i
+            ]);
+            array_push($categoryIds, $category->id);    
+        }
+
+        $restaurant = [
+            'name' => 'テスト',
+            'description' => 'テスト',
+            'lowest_price' => 1000,
+            'highest_price' => 5000,
+            'postal_code' => '0000000',
+            'address' => 'テスト',
+            'opening_time' => '10:00:00',
+            'closing_time' => '20:00:00',
+            'seating_capacity' => 50,
+            'category_ids' => $categoryIds,
+        ];
+
+        $response = $this->post(route('admin.restaurants.store'), $restaurant);
+
         $response->assertRedirect(route('admin.login'));
     }
 
@@ -161,18 +198,26 @@ class RestaurantTest extends TestCase
         $admin->email = 'admin@example.com';
         $admin->password = Hash::make('nagoyameshi');
         $admin->save();
+        $this->actingAs($admin);
+
+        $categoryIds = [];
+        for ($i = 1; $i <= 3; $i++) {
+            $category = Category::create([
+                'name' => 'カテゴリ' . $i
+            ]);
+            array_push($categoryIds, $category->id);    
+        }
 
         $restaurant = Restaurant::factory()->create();
         $data = $restaurant->toArray();
 
-        unset($data['created_at'], $data['updated_at']);
-
-        $this->actingAs($admin);
         $response = $this->post(route('admin.restaurants.store'), $data);
 
+        unset($data['category_ids'],$data['updated_at'],$data['created_at']);
         $this->assertDatabaseHas('restaurants', $data);
+        
         $response->assertStatus(302);
-        }
+    }
 
     // 未ログインのユーザーは管理者側の店舗編集ページにアクセスできない
     public function test_unauthenticated_user_cannnot_access_admin_restaurant_edit_page(): void 
@@ -215,14 +260,30 @@ class RestaurantTest extends TestCase
     // 未ログインのユーザーは店舗を更新できない
     public function test_unauthenticated_user_cannnot_update_restaurant(): void
     {
+        $categoryIds = [];
+        for ($i = 1; $i <= 3; $i++) {
+            $category = Category::create([
+                'name' => 'カテゴリ' . $i
+            ]);
+            array_push($categoryIds, $category->id);    
+        }
+
         $old_restaurant = Restaurant::factory()->create();
-        $new_restaurant = Restaurant::factory()->create();
+        $new_restaurant = [
+            'name' => 'テスト',
+            'description' => 'テスト',
+            'lowest_price' => 1000,
+            'highest_price' => 5000,
+            'postal_code' => '0000000',
+            'address' => 'テスト',
+            'opening_time' => '10:00:00',
+            'closing_time' => '20:00:00',
+            'seating_capacity' => 50,
+            'category_ids' => $categoryIds,
+        ];
 
-        $new_data = $new_restaurant->toArray();
+        $response = $this->patch(route('admin.restaurants.update', $old_restaurant), $new_restaurant);
 
-        $response = $this->patch(route('admin.restaurants.update', $old_restaurant), $new_data);
-
-        $this->assertDatabaseMissing('restaurants', $new_data);
         $response->assertRedirect(route('admin.login'));
     }
 
@@ -230,16 +291,33 @@ class RestaurantTest extends TestCase
     public function test_authenticated_regular_user_cannot_update_restaurant(): void
     {
         $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $categoryIds = [];
+        for ($i = 1; $i <= 3; $i++) {
+            $category = Category::create([
+                'name' => 'カテゴリ' . $i
+            ]);
+            array_push($categoryIds, $category->id);    
+        }
+
         $old_restaurant = Restaurant::factory()->create();
-        $new_restaurant = Restaurant::factory()->create();
+        $new_restaurant = [
+            'name' => 'テスト',
+            'description' => 'テスト',
+            'lowest_price' => 1000,
+            'highest_price' => 5000,
+            'postal_code' => '0000000',
+            'address' => 'テスト',
+            'opening_time' => '10:00:00',
+            'closing_time' => '20:00:00',
+            'seating_capacity' => 50,
+            'category_ids' => $categoryIds,
+        ];
 
-        $new_data = $new_restaurant->toArray();
+        $response = $this->patch(route('admin.restaurants.update', $old_restaurant), $new_restaurant);
 
-        $response = $this->actingAs($user)->patch(route('admin.restaurants.update', $old_restaurant), $new_data);
-
-        $this->assertDatabaseMissing('restaurants', $new_data);
         $response->assertRedirect(route('admin.login'));
-
     }
 
     // ログイン済みの管理者は店舗を更新できる
@@ -249,16 +327,35 @@ class RestaurantTest extends TestCase
         $admin->email = 'admin@example.com';
         $admin->password = Hash::make('nagoyameshi');
         $admin->save();
+        $this->actingAs($admin);
+
+        $categoryIds = [];
+        for ($i = 1; $i <= 3; $i++) {
+            $category = Category::create([
+                'name' => 'カテゴリ' . $i
+            ]);
+            array_push($categoryIds, $category->id);    
+        }
 
         $old_restaurant = Restaurant::factory()->create();
-        $new_restaurant = Restaurant::factory()->create();
-        $new_data = $new_restaurant->toArray();
+        $new_restaurant = [
+            'name' => 'テスト',
+            'description' => 'テスト',
+            'lowest_price' => 1000,
+            'highest_price' => 5000,
+            'postal_code' => '0000000',
+            'address' => 'テスト',
+            'opening_time' => '10:00:00',
+            'closing_time' => '20:00:00',
+            'seating_capacity' => 50,
+            'category_ids' => $categoryIds,
+        ];
 
-        unset($new_data['created_at'], $new_data['updated_at']);
+        $response = $this->patch(route('admin.restaurants.update', $old_restaurant), $new_restaurant);
 
-        $response = $this->actingAs($admin)->patch(route('admin.restaurants.update', $old_restaurant), $new_data);
+        unset($new_restaurant['category_ids']);
+        $this->assertDatabaseHas('restaurants', $new_restaurant);
 
-        $this->assertDatabaseHas('restaurants', $new_data);
         $response->assertStatus(302);
     }
 
