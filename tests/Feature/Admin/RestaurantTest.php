@@ -9,8 +9,10 @@ use App\Models\User;
 use App\Models\Admin;
 use App\Models\Restaurant;
 use App\Models\Category;
+use App\Models\RegularHoliday;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use App\Providers\RouteServiceProvider;
 
 class RestaurantTest extends TestCase
 {
@@ -133,6 +135,8 @@ class RestaurantTest extends TestCase
     // 未ログインのユーザーは店舗を登録できない
     public function test_unauthenticated_user_cannnot_register_restaurant(): void
     {
+        $dayOff = RegularHoliday::factory()->create();
+
         $categoryIds = [];
         for ($i = 1; $i <= 3; $i++) {
             $category = Category::create([
@@ -150,11 +154,13 @@ class RestaurantTest extends TestCase
             'address' => 'テスト',
             'opening_time' => '10:00:00',
             'closing_time' => '20:00:00',
+            'day' => $dayOff,
             'seating_capacity' => 50,
             'category_ids' => $categoryIds,
         ];
 
         $response = $this->post(route('admin.restaurants.store'), $restaurant);
+        unset($restaurant['category_ids'], $restaurant['day']);
 
         $response->assertRedirect(route('admin.login'));
     }
@@ -165,6 +171,8 @@ class RestaurantTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
+        $dayOff = RegularHoliday::factory()->create();
+
         $categoryIds = [];
         for ($i = 1; $i <= 3; $i++) {
             $category = Category::create([
@@ -182,11 +190,13 @@ class RestaurantTest extends TestCase
             'address' => 'テスト',
             'opening_time' => '10:00:00',
             'closing_time' => '20:00:00',
+            'day' => $dayOff,
             'seating_capacity' => 50,
             'category_ids' => $categoryIds,
         ];
 
         $response = $this->post(route('admin.restaurants.store'), $restaurant);
+        unset($restaurant['category_ids'], $restaurant['day']);
 
         $response->assertRedirect(route('admin.login'));
     }
@@ -208,15 +218,28 @@ class RestaurantTest extends TestCase
             array_push($categoryIds, $category->id);    
         }
 
-        $restaurant = Restaurant::factory()->create();
-        $data = $restaurant->toArray();
+        $dayOff = RegularHoliday::factory()->create();
 
-        $response = $this->post(route('admin.restaurants.store'), $data);
+        $restaurant = [
+            'name' => 'テスト',
+            'description' => 'テスト',
+            'lowest_price' => 1000,
+            'highest_price' => 5000,
+            'postal_code' => '0000000',
+            'address' => 'テスト',
+            'opening_time' => '10:00:00',
+            'closing_time' => '20:00:00',
+            'day' => $dayOff,
+            'seating_capacity' => 50,
+            'category_ids' => $categoryIds,
+        ];
 
-        unset($data['category_ids'],$data['updated_at'],$data['created_at']);
-        $this->assertDatabaseHas('restaurants', $data);
+        $response = $this->post(route('admin.restaurants.store'), $restaurant);
+
+        unset($restaurant['day'],$restaurant['category_ids'],$restaurant['updated_at'],$restaurant['created_at']);
+        $this->assertDatabaseHas('restaurants', $restaurant);
         
-        $response->assertStatus(302);
+        $response->assertRedirect(route('admin.restaurants.index'));
     }
 
     // 未ログインのユーザーは管理者側の店舗編集ページにアクセスできない
