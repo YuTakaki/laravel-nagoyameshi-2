@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\RestaurantController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\TermController;
+use App\Http\Controllers\HomeController;
 
 
 /*
@@ -19,9 +20,9 @@ use App\Http\Controllers\Admin\TermController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -59,6 +60,9 @@ Route::prefix('admin/terms')->group(function () {
     Route::patch('/edit', [TermController::class, 'update'])->name('admin.terms.update');
 });
 
+Route::group(['middleware' => 'guest:admin'], function () {
+    Route::get('/', [HomeController::class, 'index'])->name('home');
+});
 
 
 
