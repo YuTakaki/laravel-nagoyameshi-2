@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\TermController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\UserController;
 
 
 /*
@@ -62,6 +63,7 @@ Route::prefix('admin/terms')->group(function () {
 
 Route::group(['middleware' => 'guest:admin'], function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
+    Route::resource('user', UserController::class)->only(['index', 'edit', 'update'])->middleware(['auth', 'verified'])->names('user');
 });
 
 
