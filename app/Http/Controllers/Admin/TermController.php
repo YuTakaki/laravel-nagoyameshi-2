@@ -19,7 +19,7 @@ class TermController extends Controller
      */
     public function index(Term $term)
     {
-        $term = Term::all();
+        $term = Term::latest()->first();
 
         return view('admin.terms.index', compact('term'));
     }
@@ -29,6 +29,8 @@ class TermController extends Controller
      */
     public function edit(Term $term)
     {
+        $term = Term::latest()->first();
+
         return view('admin.terms.edit', compact('term'));
     }
 
@@ -43,8 +45,8 @@ class TermController extends Controller
 
         $term->content = $request->input('content');
 
-        $term->update();
+        $term->save();
 
-        return redirect('admin.terms.index', compact('term'))->with('flash_message', '利用規約を編集しました。');
+        return redirect()->route('admin.terms.index', $term)->with('flash_message', '利用規約を編集しました。');
     }
 }

@@ -20,7 +20,7 @@ class CompanyController extends Controller
      */
     public function index()
     {
-        $company = Company::all();
+        $company = Company::latest()->first();
 
         return view('admin.company.index', compact('company'));
     }
@@ -30,6 +30,8 @@ class CompanyController extends Controller
      */
     public function edit(Company $company)
     {
+        $company = Company::latest()->first();
+        
         return view('admin.company.edit', compact('company'));
     }
 
@@ -58,7 +60,7 @@ class CompanyController extends Controller
         $company->business = $request->input('business');
         $company->number_of_employees = $request->input('number_of_employees');
 
-        $company->update();
+        $company->save();
 
         return redirect()->route('admin.company.index', $company)->with('flash_message', '会社概要を編集しました。');
     }
