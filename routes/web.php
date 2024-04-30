@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\TermController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RestaurantController;
+use App\Http\Controllers\SubscriptionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,8 +65,10 @@ Route::group(['middleware' => 'guest:admin'], function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::resource('user', UserController::class)->only(['index', 'edit', 'update'])->middleware(['auth', 'verified'])->names('user');
     Route::resource('restaurants', RestaurantController::class)->only(['index', 'show'])->names('restaurants');
+    Route::get('subscription/create', [SubscriptionController::class, 'create'])->middleware(['auth', 'verified'])->middleware([NotSubscribed::class])->name('subscription.create');
+    Route::post('subscription', [SubscriptionController::class, 'store'])->middleware(['auth', 'verified'])->middleware([NotSubscribed::class])->name('subscription.store');
+    Route::get('subscription/edit', [SubscriptionController::class, 'edit'])->middleware(['auth', 'verified'])->middleware([Subscribed::class])->name('subscription.edit');
+    Route::patch('subscription', [SubscriptionController::class, 'update'])->middleware(['auth', 'verified'])->middleware([Subscribed::class])->name('subscription.update');
+    Route::get('subscription/cancel', [SubscriptionController::class, 'cancel'])->middleware(['auth', 'verified'])->middleware([Subscribed::class])->name('subscription.cancel');
+    Route::delete('subscription', [SubscriptionController::class, 'destroy'])->middleware(['auth', 'verified'])->middleware([Subscribed::class])->name('subscription.destroy');
 });
-
-
-
-
