@@ -64,6 +64,7 @@ Route::group(['middleware' => 'guest:admin'], function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::resource('user', UserController::class)->only(['index', 'edit', 'update'])->middleware(['auth', 'verified'])->names('user');
     Route::resource('restaurants', RestaurantController::class)->only(['index', 'show'])->names('restaurants');
+    Route::resource('restaurants.reviews', RestaurantController::class)->middleware(['auth', 'verified'])->names('restaurants.reviews');
 });
 
 
