@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class SubscriptionController extends Controller
 {
@@ -14,20 +15,29 @@ class SubscriptionController extends Controller
         return view('subscription.create', compact('intent'));
     }
 
-    public function store(User $user)
+    public function store(Request $request, User $user)
     {
-        Route::post('/user/subscribe', function (Request $request) {
-            $request->user()->newSubscription(
-                'premium_plan', 'price_1PBCDL2MIT849GWt3ambAejQ'
-            )->create($request->paymentMethodId);
-        });
+        $user = Auth::user();
 
-        return redirect()->route('user.index', compact('user'))->with('flash_message', '有料プランへの登録が完了しました。');
+        $request->user()->newSubscription(
+            'default', 'price_1PBCDL2MIT849GWt3ambAejQ'
+        )->create($request->paymentMethodId);
+
+        // // $user = Auth::user(); // 現在のユーザーを取得
+        // dd($request->paymentMethodId);
+        // $request->user()->newSubscription(
+        //     'premium_plan', 'price_1PBCDL2MIT849GWt3ambAejQ'
+        // )->create($request->paymentMethodId);
+
+        return redirect()->route('home')->with('flash_message', '有料プランへの登録が完了しました。');
+        // // return redirect()->route('user.index', compact('user'))->with('flash_message', '有料プランへの登録が完了しました。');
     }
 
-    public function edit()
+    public function edit(User $user)
     {
-        return view('subscription.edit', compact('user,intent'));
+        $intent = Auth::user()->createSetupIntent();
+
+        return view('subscription.edit', compact('user', 'intent'));
     }
 
     public function update(Request $request, User $user)
